@@ -15,7 +15,7 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
-        devShells.default = pkgs.mkShell { packages = [ pkgs.go ]; };
+        devShells.default = pkgs.mkShell { packages = [ pkgs.go pkgs.jq ]; };
       }
     );
 }
