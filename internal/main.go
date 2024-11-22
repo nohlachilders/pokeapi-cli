@@ -2,15 +2,25 @@ package internal
 
 import (
 	"encoding/json"
+	"time"
 	//"fmt"
 	"io"
 	"net/http"
 )
 
-func GetMap(url string) (locations string, next string, previous string, err error){
+func (c *Client) GetMap(url string) (locations string, next string, previous string, err error){
     locations, next, previous = "", "", ""
 
-    res, err := http.Get(url)
+    if url == "" {
+        url = baseurl
+    }
+
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        return locations, next, previous, err
+    }
+
+    res, err := c.httpClient.Do(req)
     if err != nil {
         return locations, next, previous, err
     }
@@ -34,6 +44,20 @@ func GetMap(url string) (locations string, next string, previous string, err err
 
     return locations, next, previous, nil
 }
+
+type Client struct {
+    httpClient http.Client
+}
+
+func NewClient(timeout time.Duration) Client {
+    return Client{
+        httpClient: http.Client{
+            Timeout: timeout,
+        },
+    }
+}
+
+const baseurl string = "https://pokeapi.co/api/v2/location-area/"
 
 type mapData struct {
 	Count    int    `json:"count"`

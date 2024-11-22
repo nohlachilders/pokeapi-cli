@@ -4,14 +4,16 @@ import (
     "bufio"
     "os"
     "internal"
+    "time"
 )
 
 func main() {
     // a simple repl loop
     commands := getCommands()
     scanner := bufio.NewScanner(os.Stdin)
+    pokeClient := internal.NewClient(5 * time.Second)
     config := config{
-        forward: "https://pokeapi.co/api/v2/location-area/",
+        pokeapiClient: pokeClient,
     }
 
     for {
@@ -25,14 +27,16 @@ func main() {
                 fmt.Println(err)
             }
         case false:
-            fmt.Println("Command not found\n")
+            fmt.Println("Command not found")
         }
+        fmt.Println("")
     }
 }
 
 type config struct {
     back string
     forward string
+    pokeapiClient internal.Client
 }
 
 type cliCommand struct {
@@ -72,11 +76,7 @@ func getCommands() map[string]cliCommand {
 }
 
 func commandMap(c *config) error {
-    if c.forward == "" {
-        return fmt.Errorf("No next page of locations")
-    }
-
-    locations, next, previous, err := internal.GetMap(c.forward)
+    locations, next, previous, err := c.pokeapiClient.GetMap(c.forward)
     if err != nil {
         return err
     }
@@ -92,7 +92,7 @@ func commandMapb(c *config) error {
         return fmt.Errorf("No previous page of locations")
     }
 
-    locations, next, previous, err := internal.GetMap(c.back)
+    locations, next, previous, err := c.pokeapiClient.GetMap(c.back)
     if err != nil {
         return err
     }
@@ -109,7 +109,6 @@ func commandHelp(c *config) error {
     for _, commandInfo := range commands{
         fmt.Printf("%s: %s\n", commandInfo.name, commandInfo.description)
     }
-    fmt.Println("")
     return nil
 }
 
