@@ -1,4 +1,4 @@
-package internal
+package pokeapi
 
 import (
 	"encoding/json"
@@ -8,41 +8,32 @@ import (
 	"net/http"
 )
 
-func (c *Client) GetMap(url string) (locations string, next string, previous string, err error){
-    locations, next, previous = "", "", ""
-
+func (c *Client) GetMap(url string) (data MapData, err error){
     if url == "" {
         url = baseurl
     }
 
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {
-        return locations, next, previous, err
+        return data, err
     }
 
     res, err := c.httpClient.Do(req)
     if err != nil {
-        return locations, next, previous, err
+        return data, err
     }
     defer res.Body.Close()
 
     body, err := io.ReadAll(res.Body)
     if err != nil {
-        return locations, next, previous, err
+        return data, err
     }
 
-    var data mapData
     if err := json.Unmarshal(body, &data); err != nil {
-        return locations, next, previous, err
+        return data, err
     }
 
-    for _, result := range data.Results {
-        locations = locations + "\n" + result.Name
-    }
-    next = data.Next
-    previous = data.Previous
-
-    return locations, next, previous, nil
+    return data, err
 }
 
 type Client struct {
@@ -59,7 +50,7 @@ func NewClient(timeout time.Duration) Client {
 
 const baseurl string = "https://pokeapi.co/api/v2/location-area/"
 
-type mapData struct {
+type MapData struct {
 	Count    int    `json:"count"`
 	Next     string `json:"next"`
 	Previous string `json:"previous"`

@@ -3,7 +3,7 @@ import (
     "fmt"
     "bufio"
     "os"
-    "internal"
+    "pokeapi"
     "time"
 )
 
@@ -11,7 +11,7 @@ func main() {
     // a simple repl loop
     commands := getCommands()
     scanner := bufio.NewScanner(os.Stdin)
-    pokeClient := internal.NewClient(5 * time.Second)
+    pokeClient := pokeapi.NewClient(5 * time.Second)
     config := config{
         pokeapiClient: pokeClient,
     }
@@ -36,7 +36,7 @@ func main() {
 type config struct {
     back string
     forward string
-    pokeapiClient internal.Client
+    pokeapiClient pokeapi.Client
 }
 
 type cliCommand struct {
@@ -76,14 +76,16 @@ func getCommands() map[string]cliCommand {
 }
 
 func commandMap(c *config) error {
-    locations, next, previous, err := c.pokeapiClient.GetMap(c.forward)
+    data, err := c.pokeapiClient.GetMap(c.forward)
     if err != nil {
         return err
     }
-    c.forward = next
-    c.back = previous
+    c.forward = data.Next
+    c.back = data.Previous
 
-    fmt.Println(locations)
+    for _,entry := range data.Results {
+        fmt.Println(entry.Name)
+    }
     return nil
 }
 
@@ -92,14 +94,16 @@ func commandMapb(c *config) error {
         return fmt.Errorf("No previous page of locations")
     }
 
-    locations, next, previous, err := c.pokeapiClient.GetMap(c.back)
+    data, err := c.pokeapiClient.GetMap(c.back)
     if err != nil {
         return err
     }
-    c.forward = next
-    c.back = previous
+    c.forward = data.Next
+    c.back = data.Previous
 
-    fmt.Println(locations)
+    for _,entry := range data.Results {
+        fmt.Println(entry.Name)
+    }
     return nil
 }
 
