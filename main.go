@@ -3,8 +3,9 @@ import (
     "fmt"
     "bufio"
     "os"
-    "pokeapi"
     "time"
+
+    "pokeapi"
 )
 
 func main() {
