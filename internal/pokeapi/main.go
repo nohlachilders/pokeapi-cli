@@ -5,11 +5,20 @@ import (
 	"time"
 	"io"
 	"net/http"
+
+    "github.com/nohlachilders/pokeapi-cli/internal/pokecache"
 )
 
 func (c *Client) GetMap(url string) (data MapData, err error){
     if url == "" {
         url = baseurl
+    }
+
+    if body, ok := c.cache.Get(url); ok {
+        if err := json.Unmarshal(body, &data); err != nil {
+            return data, err
+        }
+        return data, err
     }
 
     req, err := http.NewRequest("GET", url, nil)
@@ -37,13 +46,15 @@ func (c *Client) GetMap(url string) (data MapData, err error){
 
 type Client struct {
     httpClient http.Client
+    cache pokecache.Cache
 }
 
-func NewClient(timeout time.Duration) Client {
+func NewClient(timeout time.Duration, cache_timeout time.Duration) Client {
     return Client{
         httpClient: http.Client{
             Timeout: timeout,
         },
+        cache: *pokecache.NewCache(cache_timeout),
     }
 }
 

@@ -5,14 +5,14 @@ import (
     "os"
     "time"
 
-    "pokeapi"
+    "github.com/nohlachilders/pokeapi-cli/internal/pokeapi"
 )
 
 func main() {
     // a simple repl loop
     commands := getCommands()
     scanner := bufio.NewScanner(os.Stdin)
-    pokeClient := pokeapi.NewClient(5 * time.Second)
+    pokeClient := pokeapi.NewClient(5 * time.Second, 5 * time.Second)
     config := config{
         pokeapiClient: pokeClient,
     }
