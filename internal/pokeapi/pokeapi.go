@@ -5,6 +5,7 @@ import (
 	"time"
 	"io"
 	"net/http"
+    "fmt"
 
     "github.com/nohlachilders/pokeapi-cli/internal/pokecache"
 )
@@ -41,6 +42,7 @@ func (c *Client) GetMap(url string) (data MapData, err error){
         return data, err
     }
 
+    c.cache.Add(url, body)
     return data, err
 }
 
@@ -49,8 +51,8 @@ type Client struct {
     cache pokecache.Cache
 }
 
-func NewClient(timeout time.Duration, cache_timeout time.Duration) Client {
-    return Client{
+func NewClient(timeout time.Duration, cache_timeout time.Duration) *Client {
+    return &Client{
         httpClient: http.Client{
             Timeout: timeout,
         },

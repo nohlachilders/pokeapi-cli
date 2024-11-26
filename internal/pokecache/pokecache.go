@@ -5,8 +5,10 @@ import (
 )
 
 func NewCache(interval time.Duration) *Cache {
-    cache := Cache{}
-    cache.reapLoop(interval)
+    cache := Cache{
+        entries: map[string]cacheEntry{},
+    }
+    go cache.reapLoop(interval)
     return &cache
 }
 
