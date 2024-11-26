@@ -5,7 +5,6 @@ import (
 	"time"
 	"io"
 	"net/http"
-    "fmt"
 
     "github.com/nohlachilders/pokeapi-cli/internal/pokecache"
 )
