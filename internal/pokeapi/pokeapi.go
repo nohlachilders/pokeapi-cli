@@ -11,6 +11,8 @@ import (
 )
 
 func (c *Client) GetMap(url string) (data MapData, err error){
+    // function for parsing requests for map locations from pokeAPI into usable structs
+    // defaults to the first page
     if url == "" {
         url = baseurl
     }
@@ -47,6 +49,7 @@ func (c *Client) GetMap(url string) (data MapData, err error){
 }
 
 func (c *Client) GetExplore(location string) (data LocationData, err error){
+    // function for parsing pokemon data in a given location from API into usable struct
     if location == "" {
         return data, fmt.Errorf("not found")
     }
@@ -86,6 +89,7 @@ func (c *Client) GetExplore(location string) (data LocationData, err error){
 
 
 type Client struct {
+    // client struct that request functions depend on for caching functionality
     httpClient http.Client
     cache pokecache.Cache
 }

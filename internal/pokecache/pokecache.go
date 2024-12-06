@@ -5,6 +5,7 @@ import (
 )
 
 func NewCache(interval time.Duration) *Cache {
+    // initialize a cache and start its timeout loop concurrently
     cache := Cache{
         entries: map[string]cacheEntry{},
     }
@@ -13,6 +14,8 @@ func NewCache(interval time.Duration) *Cache {
 }
 
 func (c *Cache) reapLoop(interval time.Duration) {
+    // clears cache entries after they reach a certain age
+    // ran in a goroutine necessitating mutexes for read/write safety
     ticker := time.NewTicker(interval)
     for t := range ticker.C {
         c.mu.Lock()
@@ -26,6 +29,7 @@ func (c *Cache) reapLoop(interval time.Duration) {
 }
 
 func (c *Cache) Add(key string, val []byte) {
+    // add a url/response pair to the cache with mutex safety
     c.mu.Lock()
     defer c.mu.Unlock()
     c.entries[key] = cacheEntry{
@@ -35,6 +39,7 @@ func (c *Cache) Add(key string, val []byte) {
 }
 
 func (c *Cache) Get(key string) ([]byte, bool) {
+    // check for and return the response and existence for a url in the cache
     c.mu.Lock()
     defer c.mu.Unlock()
     entry, ok := c.entries[key]
@@ -48,6 +53,8 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 }
 
 type Cache struct {
+    // cache struct which, when initialized with NewCache(), will clear old entries
+    // used for url/response pairs
     entries map[string]cacheEntry
     mu sync.Mutex
 }
