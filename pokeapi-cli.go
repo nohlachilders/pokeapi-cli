@@ -104,9 +104,9 @@ func commandMapb(c *config) error {
 
 func commandHelp(c *config) error {
     commands := getCommands()
-    fmt.Println("Usage:\n")
+    fmt.Println("Usage:")
     for _, commandInfo := range commands{
-        fmt.Printf("%s: %s\n", commandInfo.name, commandInfo.description)
+        fmt.Printf("%s: %s", commandInfo.name, commandInfo.description)
     }
     return nil
 }
