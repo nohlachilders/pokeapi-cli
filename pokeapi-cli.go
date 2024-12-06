@@ -23,13 +23,14 @@ func startRepl() {
         scanner.Scan()
         input := strings.Split(scanner.Text(), " ")
         args := []string{}
-        if len(input) > 1{
+        command := input[0]
+        if len(input) > 0{
             args = input[1:]
         }
 
         switch _, ok := commands[input[0]]; ok {
         case true:
-            err := commands[scanner.Text()].callback(&config, args)
+            err := commands[command].callback(&config, args)
             if err != nil {
                 fmt.Println(err)
             }
@@ -66,7 +67,7 @@ func getCommands() map[string]cliCommand {
         },
         "explore": {
             name: "explore",
-            description: "Displays pokemon found in the location given as an argument",
+            description: "Displays Pokemon found in the location given as an argument",
             callback: commandExplore,
         },
         "help": {
@@ -124,17 +125,13 @@ func commandHelp(c *config, args []string) error {
 }
 
 func commandExplore(c *config, args []string) error {
-    fmt.Printf("heres the first arg: %v\n", args[0])
-
-    data, err := c.pokeapiClient.GetMap(c.forward)
+    data, err := c.pokeapiClient.GetExplore(args[0])
     if err != nil {
         return err
     }
-    c.forward = data.Next
-    c.back = data.Previous
 
-    for _,entry := range data.Results {
-        fmt.Println(entry.Name)
+    for _,entry := range data.PokemonEncounters {
+        fmt.Println("   - " + entry.Pokemon.Name)
     }
     return nil
 }
