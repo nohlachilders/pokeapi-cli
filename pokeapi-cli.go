@@ -1,11 +1,13 @@
 package main
-import (
-    "fmt"
-    "bufio"
-    "os"
-    "time"
 
-    "github.com/nohlachilders/pokeapi-cli/internal/pokeapi"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/nohlachilders/pokeapi-cli/internal/pokeapi"
 )
 
 func startRepl() {
@@ -19,10 +21,15 @@ func startRepl() {
     for {
         fmt.Print("Pokedex >")
         scanner.Scan()
+        input := strings.Split(scanner.Text(), " ")
+        args := []string{}
+        if len(input) > 1{
+            args = input[1:]
+        }
 
-        switch _, ok := commands[scanner.Text()]; ok {
+        switch _, ok := commands[input[0]]; ok {
         case true:
-            err := commands[scanner.Text()].callback(&config)
+            err := commands[scanner.Text()].callback(&config, args)
             if err != nil {
                 fmt.Println(err)
             }
@@ -42,7 +49,7 @@ type config struct {
 type cliCommand struct {
     name string
     description string
-    callback func(*config) error
+    callback func(*config, []string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -57,6 +64,11 @@ func getCommands() map[string]cliCommand {
             description: "Displays the previous page of locations",
             callback: commandMapb,
         },
+        "explore": {
+            name: "explore",
+            description: "Displays pokemon found in the location given as an argument",
+            callback: commandExplore,
+        },
         "help": {
             name: "help",
             description: "Displays a help message",
@@ -70,7 +82,7 @@ func getCommands() map[string]cliCommand {
     }
 }
 
-func commandMap(c *config) error {
+func commandMap(c *config, args []string) error {
     data, err := c.pokeapiClient.GetMap(c.forward)
     if err != nil {
         return err
@@ -84,7 +96,7 @@ func commandMap(c *config) error {
     return nil
 }
 
-func commandMapb(c *config) error {
+func commandMapb(c *config, args []string) error {
     if c.back == "" {
         return fmt.Errorf("No previous page of locations")
     }
@@ -102,16 +114,32 @@ func commandMapb(c *config) error {
     return nil
 }
 
-func commandHelp(c *config) error {
+func commandHelp(c *config, args []string) error {
     commands := getCommands()
     fmt.Println("Usage:")
     for _, commandInfo := range commands{
-        fmt.Printf("%s: %s", commandInfo.name, commandInfo.description)
+        fmt.Printf("%s: %s\n", commandInfo.name, commandInfo.description)
     }
     return nil
 }
 
-func commandExit(c *config) error {
+func commandExplore(c *config, args []string) error {
+    fmt.Printf("heres the first arg: %v\n", args[0])
+
+    data, err := c.pokeapiClient.GetMap(c.forward)
+    if err != nil {
+        return err
+    }
+    c.forward = data.Next
+    c.back = data.Previous
+
+    for _,entry := range data.Results {
+        fmt.Println(entry.Name)
+    }
+    return nil
+}
+
+func commandExit(c *config, args []string) error {
     os.Exit(0)
     return nil
 }
