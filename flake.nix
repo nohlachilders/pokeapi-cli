@@ -13,9 +13,22 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        bootdotdev = nixpkgs.legacyPackages.${system}.buildGoModule rec {
+            name = "bootdotdev";
+            src = nixpkgs.legacyPackages.${system}.fetchFromGitHub {
+                owner = "bootdotdev";
+                repo = "bootdev";
+                rev = "d5a5ebb";
+                sha256 = "sha256-4XOXYcC+ghvyZ9oFg/kXn/1MdseMPIWzR4CFMVWrukw=";
+            };
+            vendorHash = "sha256-jhRoPXgfntDauInD+F7koCaJlX4XDj+jQSe/uEEYIMM=";
+
+        };
+
+
       in
       {
-        devShells.default = pkgs.mkShell { packages = [ pkgs.go pkgs.jq ]; };
+        devShells.default = pkgs.mkShell { packages = [ bootdotdev pkgs.go pkgs.jq ]; };
       }
     );
 }

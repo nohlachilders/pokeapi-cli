@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"time"
+    "math/rand"
 
 	"github.com/nohlachilders/pokeapi-cli/internal/pokeapi"
 )
@@ -16,6 +17,7 @@ func startRepl() {
     // initialize the state, start a client with a request and cache timeout set
     config := config{
         pokeapiClient: *pokeapi.NewClient(5 * time.Second, 5 * time.Second),
+        pokedex: pokeapi.Pokedex{},
     }
 
     // a simple repl loop
@@ -49,6 +51,7 @@ type config struct {
     back string
     forward string
     pokeapiClient pokeapi.Client
+    pokedex pokeapi.Pokedex
 }
 
 type cliCommand struct {
@@ -74,6 +77,11 @@ func getCommands() map[string]cliCommand {
             name: "explore location-name-here",
             description: "Displays Pokemon found in the location given as an argument",
             callback: commandExplore,
+        },
+        "catch": {
+            name: "catch pokemon-name-here",
+            description: "Tries to catch a named pokemon. If it succeeds, it is added to your Pokedex",
+            callback: commandCatch,
         },
         "help": {
             name: "help",
@@ -147,8 +155,35 @@ func commandExplore(c *config, args []string) error {
     return nil
 }
 
+func commandCatch(c *config, args []string) error {
+    // catches a given pokemon based on a random chance and adds it
+    // to the pokedex
+    name := args[0]
+    pokemon, err := c.pokeapiClient.GetPokemon(name)
+    if err != nil {
+        return err
+    }
+
+    fmt.Printf("\nThrowing a Pokeball at %s...\n", name)
+    //"Throwing a Pokeball at %s..."
+    // formula that scales with BaseExperience based off low and high values
+    // found on the wiki lol
+    chance := float32(pokemon.BaseExperience - 36)/608 - 0.1
+    roll := rand.Float32()
+    //fmt.Printf("roll: %v, chance: %v\n", roll, chance)
+    if roll > chance{
+        fmt.Printf("%s was caught!\n", name)
+        c.pokedex[name] = pokemon
+    } else {
+        fmt.Printf("%s escaped!\n", name)
+    }
+
+    return nil
+}
+
 func commandExit(c *config, args []string) error {
     // exit program
+    fmt.Println("Closing program...")
     os.Exit(0)
     return nil
 }
