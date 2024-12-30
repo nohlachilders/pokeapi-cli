@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
     "math/rand"
+    "errors"
 
 	"github.com/nohlachilders/pokeapi-cli/internal/pokeapi"
 )
@@ -82,6 +83,16 @@ func getCommands() map[string]cliCommand {
             name: "catch pokemon-name-here",
             description: "Tries to catch a named pokemon. If it succeeds, it is added to your Pokedex",
             callback: commandCatch,
+        },
+        "inspect": {
+            name: "inspect pokemon-name-here",
+            description: "Inspect a previously caught pokemon from the pokedex",
+            callback: commandInspect,
+        },
+        "pokedex": {
+            name: "pokedex",
+            description: "List caught pokemon",
+            callback: commandPokedex,
         },
         "help": {
             name: "help",
@@ -178,6 +189,37 @@ func commandCatch(c *config, args []string) error {
         fmt.Printf("%s escaped!\n", name)
     }
 
+    return nil
+}
+
+func commandInspect(c *config, args []string) error {
+    if len(args) != 1 {
+        return errors.New("argument must be one pokemon name")
+    }
+    pokemon, ok := c.pokedex[args[0]]
+    if !ok {
+        return errors.New("pokemon not caught")
+    }
+
+    fmt.Println("Name:", pokemon.Name)
+    fmt.Println("Height:", pokemon.Height)
+    fmt.Println("Weight:", pokemon.Weight)
+    fmt.Println("Types:")
+    for _, typeInfo := range pokemon.Types {
+        fmt.Println(" -", typeInfo.Type.Name)
+    }
+    fmt.Println("Stats:")
+    for _, stat := range pokemon.Stats {
+        fmt.Printf(" -%s: %v\n", stat.Stat.Name, stat.BaseStat)
+    }
+    return nil
+}
+
+func commandPokedex(c *config, args []string) error {
+    fmt.Println("Pokedex:")
+    for name,_ := range c.pokedex {
+        fmt.Println(" -", name)
+    }
     return nil
 }
 

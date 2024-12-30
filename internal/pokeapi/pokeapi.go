@@ -145,6 +145,8 @@ func (m *LocationData) unmarshalInto(body []byte) error {
 
 type PokemonData struct {
 	BaseExperience int `json:"base_experience"`
+    Name      string        `json:"name"`
+    Height                 int           `json:"height"`
 	Stats []struct {
 		BaseStat int `json:"base_stat"`
 		Effort   int `json:"effort"`
